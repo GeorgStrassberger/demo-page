@@ -1,12 +1,12 @@
-name: Build & Deploy
+name: Build & Deploy (Demo)
 
 on:
   push:
-    branches: [ "main" ]  # oder dein Deploy-Branch
+    branches: [ "main" ]   # passe an, falls du von einem anderen Branch deployst
 
 permissions:
   contents: read
-  packages: write  # zum Push in GHCR
+  packages: write          # nötig für GHCR push
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}:latest
@@ -28,7 +28,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -50,17 +50,18 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
-            echo "Docker login to GHCR..."
+
+            echo "Docker login to GHCR…"
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ secrets.GHCR_USER }}" --password-stdin
 
-            echo "Pull latest image..."
+            echo "Pull latest image…"
             docker pull ${{ env.IMAGE_NAME }}
 
-            echo "Stop & remove old container if exists..."
+            echo "Stop & remove old container if exists…"
             docker rm -f demo-page || true
 
-            echo "Run container on port 8008..."
+            echo "Run container on port 8008"
             docker run -d --name demo-page -p 8008:80 ${{ env.IMAGE_NAME }}
 
-            echo "Cleanup old images..."
+            echo "Cleanup dangling images…"
             docker image prune -f
