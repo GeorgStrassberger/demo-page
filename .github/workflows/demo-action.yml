@@ -10,6 +10,8 @@ permissions:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}:latest
+  IMAGE_LATEST: ghcr.io/${{ toLower(github.repository) }}:latest
+  IMAGE_SHA: ghcr.io/${{ toLower(github.repository) }}:${{ github.sha }}
 
 jobs:
   build-and-push:
@@ -34,8 +36,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ${{ env.IMAGE_LATEST }}
+            ${{ env.IMAGE_SHA }}
 
   deploy:
     needs: build-and-push
