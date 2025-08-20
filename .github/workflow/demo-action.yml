@@ -1,0 +1,67 @@
+name: Build & Deploy (Demo)
+
+on:
+  push:
+    branches: [ "main" ]   # passe an, falls du von einem anderen Branch deployst
+
+permissions:
+  contents: read
+  packages: write          # nötig für GHCR push
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}:latest
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+
+            echo "Docker login to GHCR…"
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ secrets.GHCR_USER }}" --password-stdin
+
+            echo "Pull latest image…"
+            docker pull ${{ env.IMAGE_NAME }}
+
+            echo "Stop & remove old container if exists…"
+            docker rm -f demo-page || true
+
+            echo "Run container on port 8008"
+            docker run -d --name demo-page -p 8008:80 ${{ env.IMAGE_NAME }}
+
+            echo "Cleanup dangling images…"
+            docker image prune -f
