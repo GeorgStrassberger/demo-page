@@ -1,3 +1,28 @@
+:root{
+    --bs-primary: red;
+}
+
 html{
     overflow-x: hidden;
+}
+
+.opinions-box {
+    margin: 0 0 8px 0;
+    text-align: center;
+
+    &__view-more {
+        text-decoration: underline;
+    }
+
+    &__text-input {
+        border: 1px solid #ccc;
+    }
+
+    &--is-inactive {
+        color: gray;
+    }
+}
+
+.opinions-box__view-more{
+    text-decoration: underline;
 }
