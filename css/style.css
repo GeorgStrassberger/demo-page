@@ -1,0 +1,7 @@
+:root {
+    --bs-primary: red;
+}
+
+html {
+    overflow-x: hidden;
+}

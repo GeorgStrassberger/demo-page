@@ -28,7 +28,7 @@ docker logs demo-page-contianer
 
 4. Browser
 Browser öffnen mit [http://localhost:8008](http://localhost:8008) 
-   ![demo-page.png](demo-page.png)
+   ![preview.png](assets/preview.png)
 
 5. Container stoppen & löschen
 ```bash
