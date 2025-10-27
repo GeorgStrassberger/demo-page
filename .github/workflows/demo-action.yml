@@ -2,7 +2,7 @@ name: Build & Deploy (Demo)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -37,9 +37,11 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.IMAGE_NAME }}
             ${{ env.IMAGE_SHA }}
+          provenance: false
 
   deploy:
     needs: build-and-push
